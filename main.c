@@ -44,7 +44,7 @@ void ExibirMenuJogos()
     Rectangle botaoVoltar = {screenWidth/2 - 50, 500, 100, 40};
 
     InitAudioDevice();
-    Music musica = LoadMusicStream("menu/IntroLoop.wav");
+    Music musica = LoadMusicStream("COBRA/IntroLoop.wav");
     musica.looping = true;  
     PlayMusicStream(musica);
     
@@ -96,7 +96,7 @@ void ExibirMenuJogos()
         DrawText("cobrinha", botaoJogo1.x + (botaoJogo1.width - MeasureText("cobrinha", fontSize))/2, botaoJogo1.y + 15, fontSize, WHITE);
         DrawText("pula_catraca", botaoJogo2.x + (botaoJogo2.width - MeasureText("pula_catraca", fontSize))/2, botaoJogo2.y + 15, fontSize, WHITE);
         DrawText("flappy bird", botaoJogo3.x + (botaoJogo3.width - MeasureText("flappy bird", fontSize))/2, botaoJogo3.y + 15, fontSize, WHITE);
-        DrawText("Sair", botaoVoltar.x + (botaoVoltar.width - MeasureText("Voltar", fontSize))/2, botaoVoltar.y + 10, fontSize, BLACK);
+        DrawText("  Sair", botaoVoltar.x + (botaoVoltar.width - MeasureText("Voltar", fontSize))/2, botaoVoltar.y + 10, fontSize, BLACK);
         EndDrawing();
     }
     UnloadMusicStream(musica);
