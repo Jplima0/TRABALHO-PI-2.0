@@ -1,4 +1,3 @@
-// inimigo.c
 #include "inimigo.h"
 #include <stdlib.h>
 #include <time.h>
