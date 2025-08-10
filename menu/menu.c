@@ -20,9 +20,9 @@ int IniciarMenu() {
     InitAudioDevice();
 
     Texture2D background = LoadTexture("menu.png");
-    Texture2D icon = LoadTexture("Menu/imagens/configuracao.png");
-    Texture2D pergaminho = LoadTexture("Menu/imagens/pergaminho.png");
-    Music musica = LoadMusicStream("Menu/Som/menu.wav");
+    Texture2D icon = LoadTexture("configuracao.png");
+    Texture2D pergaminho = LoadTexture("pergaminho.png");
+    
 
     Color LIGHTGREEN = (Color){144, 238, 144, 255};  
     Color LIGHTCORAL = (Color){240, 128, 128, 255}; 
