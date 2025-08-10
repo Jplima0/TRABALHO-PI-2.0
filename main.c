@@ -25,8 +25,16 @@ void RodarJogoCobra() {
     int score = 0;
     
     InicializarJogo(&cobra, &inimigo, &food);
+
+    // áudio
+    InitAudioDevice();
+    Sound musica = LoadSound("cobra/IntroLoop.wav");
+    PlaySound(musica);
+    //
     
     while (!WindowShouldClose()) {
+        InitWindow(GRID_WIDTH * SQUARE_SIZE, GRID_HEIGHT * SQUARE_SIZE, "Jogo da Cobra");
+    
         if (!gameOver) {
             ProcessarInput(&cobra);
             AtualizarJogo(&cobra, &inimigo, &food, &gameOver, &score);
@@ -36,7 +44,9 @@ void RodarJogoCobra() {
         
         DesenharJogo(&cobra, &inimigo, &food, gameOver, score);
     }
-    
+
+    UnloadSound(musica);
+    CloseAudioDevice();
     free(cobra.segmentos);
     CloseWindow();
 }
