@@ -1,10 +1,14 @@
 #include "raylib.h"
 #include <stdlib.h>
 #include <time.h>
+#include "inimigo.h"
 
 #define SQUARE_SIZE 20
 #define GRID_WIDTH 20
 #define GRID_HEIGHT 15
+
+
+void AtualizarInimigo(Inimigo *inimigo, Vector2 posicaoCabecaJogador); 
 
 typedef struct {
     Vector2 position;
@@ -39,17 +43,14 @@ void AddSegment(Snake *snake, Vector2 position) {
 }
 
 void MoveSnake(Snake *snake) {
-    // Move o corpo (começando do final para não sobrescrever segmentos)
     for (int i = snake->length - 1; i > 0; i--) {
         snake->segments[i].position = snake->segments[i-1].position;
     }
-    
-    // Move a cabeça
     snake->segments[0].position.x += snake->segments[0].speed.x;
     snake->segments[0].position.y += snake->segments[0].speed.y;
 }
 
-void GenerateFood(Food *food, Snake *snake) {
+void GenerateFood(Food *food, Snake *snake, Inimigo *inimigo) {
     bool validPosition = false;
     
     while (!validPosition) {
@@ -57,7 +58,6 @@ void GenerateFood(Food *food, Snake *snake) {
         food->position.y = GetRandomValue(0, GRID_HEIGHT - 1) * SQUARE_SIZE;
         
         validPosition = true;
-        // Verifica se a comida não está em cima da cobra
         for (int i = 0; i < snake->length; i++) {
             if (food->position.x == snake->segments[i].position.x && 
                 food->position.y == snake->segments[i].position.y) {
@@ -65,9 +65,12 @@ void GenerateFood(Food *food, Snake *snake) {
                 break;
             }
         }
+        
+        if (validPosition && VerificarColisaoInimigo(inimigo, food->position)) {
+            validPosition = false;
+        }
     }
     
-    // Cor aleatória para a comida
     food->color = (Color){
         GetRandomValue(50, 255),
         GetRandomValue(50, 255),
@@ -100,26 +103,25 @@ int main(void) {
     InitWindow(screenWidth, screenHeight, "Jogo da Cobrinha com Raylib");
     SetTargetFPS(10);
     
-    // Inicializa a cobra
     Snake snake = {0};
     snake.capacity = 10;
     snake.segments = malloc(snake.capacity * sizeof(SnakeSegment));
     snake.color = GREEN;
     
-    // Adiciona segmentos iniciais
     AddSegment(&snake, (Vector2){5 * SQUARE_SIZE, 5 * SQUARE_SIZE});
     AddSegment(&snake, (Vector2){4 * SQUARE_SIZE, 5 * SQUARE_SIZE});
     AddSegment(&snake, (Vector2){3 * SQUARE_SIZE, 5 * SQUARE_SIZE});
     
-    // Inicializa a comida
+    Inimigo inimigo;
+    InicializarInimigo(&inimigo);
+    
     Food food = {0};
-    GenerateFood(&food, &snake);
+    GenerateFood(&food, &snake, &inimigo);
     
     bool gameOver = false;
     int score = 0;
     
     while (!WindowShouldClose()) {
-        // Controles
         if (!gameOver) {
             if (IsKeyPressed(KEY_RIGHT) && snake.segments[0].speed.x == 0) {
                 snake.segments[0].speed = (Vector2){SQUARE_SIZE, 0};
@@ -131,74 +133,57 @@ int main(void) {
                 snake.segments[0].speed = (Vector2){0, SQUARE_SIZE};
             }
             
-            // Movimento da cobra
             MoveSnake(&snake);
+            AtualizarInimigo(&inimigo, snake.segments[0].position);
             
-            // Verifica colisão com a comida
             if (snake.segments[0].position.x == food.position.x && 
                 snake.segments[0].position.y == food.position.y) {
-                // Adiciona novo segmento na posição do último segmento
                 AddSegment(&snake, snake.segments[snake.length-1].position);
-                GenerateFood(&food, &snake);
+                GenerateFood(&food, &snake, &inimigo);
                 score += 10;
             }
             
-            // Verifica colisões
-            if (CheckCollisionWithSelf(&snake) || CheckCollisionWithWalls(&snake)) {
+            if (CheckCollisionWithSelf(&snake) || 
+                CheckCollisionWithWalls(&snake) || 
+                VerificarColisaoInimigo(&inimigo, snake.segments[0].position)) {
                 gameOver = true;
             }
-        } else {
-            // Reinicia o jogo se pressionar espaço
-            if (IsKeyPressed(KEY_SPACE)) {
-                // Limpa a cobra
-                free(snake.segments);
-                snake.length = 0;
-                snake.capacity = 10;
-                snake.segments = malloc(snake.capacity * sizeof(SnakeSegment));
-                
-                // Recria a cobra inicial
-                AddSegment(&snake, (Vector2){5 * SQUARE_SIZE, 5 * SQUARE_SIZE});
-                AddSegment(&snake, (Vector2){4 * SQUARE_SIZE, 5 * SQUARE_SIZE});
-                AddSegment(&snake, (Vector2){3 * SQUARE_SIZE, 5 * SQUARE_SIZE});
-                
-                // Nova comida
-                GenerateFood(&food, &snake);
-                
-                // Reseta o jogo
-                gameOver = false;
-                score = 0;
-            }
+        } else if (IsKeyPressed(KEY_SPACE)) {
+            free(snake.segments);
+            snake.length = 0;
+            snake.capacity = 10;
+            snake.segments = malloc(snake.capacity * sizeof(SnakeSegment));
+            
+            AddSegment(&snake, (Vector2){5 * SQUARE_SIZE, 5 * SQUARE_SIZE});
+            AddSegment(&snake, (Vector2){4 * SQUARE_SIZE, 5 * SQUARE_SIZE});
+            AddSegment(&snake, (Vector2){3 * SQUARE_SIZE, 5 * SQUARE_SIZE});
+            
+            InicializarInimigo(&inimigo);
+            GenerateFood(&food, &snake, &inimigo);
+            gameOver = false;
+            score = 0;
         }
         
-        // Desenho
         BeginDrawing();
             ClearBackground(RAYWHITE);
             
-            // Desenha grade
             for (int i = 0; i < GRID_WIDTH; i++) {
                 for (int j = 0; j < GRID_HEIGHT; j++) {
                     DrawRectangleLines(i * SQUARE_SIZE, j * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE, LIGHTGRAY);
                 }
             }
             
-            // Desenha comida
             DrawRectangle(food.position.x, food.position.y, SQUARE_SIZE, SQUARE_SIZE, food.color);
+            DesenharInimigo(&inimigo);
             
-            // Desenha cobra
             for (int i = 0; i < snake.length; i++) {
-                // Faz a cabeça um pouco diferente
-                Color segmentColor = snake.color;
-                if (i == 0) {
-                    segmentColor = DARKGREEN;
-                }
+                Color segmentColor = (i == 0) ? DARKGREEN : snake.color;
                 DrawRectangle(snake.segments[i].position.x, snake.segments[i].position.y, 
-                              SQUARE_SIZE, SQUARE_SIZE, segmentColor);
+                             SQUARE_SIZE, SQUARE_SIZE, segmentColor);
             }
             
-            // Desenha pontuação
             DrawText(TextFormat("Pontos: %d", score), 10, 10, 20, DARKGRAY);
             
-            // Desenha mensagem de game over
             if (gameOver) {
                 DrawText("GAME OVER", screenWidth/2 - MeasureText("GAME OVER", 40)/2, screenHeight/2 - 40, 40, RED);
                 DrawText("Pressione ESPACO para reiniciar", 
@@ -208,10 +193,7 @@ int main(void) {
         EndDrawing();
     }
     
-    // Libera memória
     free(snake.segments);
-    
     CloseWindow();
-    
     return 0;
 }
