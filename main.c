@@ -1,4 +1,4 @@
-#include "menu.h"
+#include "menu/menu.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <raylib.h>
@@ -42,9 +42,16 @@ void ExibirMenuJogos()
     Rectangle botaoJogo2 = {screenWidth/2 - 100, 300, 200, 50};
     Rectangle botaoJogo3 = {screenWidth/2 - 100, 400, 200, 50};
     Rectangle botaoVoltar = {screenWidth/2 - 50, 500, 100, 40};
+
+    InitAudioDevice();
+    Music musica = LoadMusicStream("menu/IntroLoop.wav");
+    musica.looping = true;  
+    PlayMusicStream(musica);
     
     while (!WindowShouldClose()) {
         Vector2 mouse = GetMousePosition();
+
+        UpdateMusicStream(musica); 
         
         // Efeito hover nos botões
         corJogo1 = CheckCollisionPointRec(mouse, botaoJogo1) ? LIGHTGREEN : GREEN;
@@ -89,9 +96,11 @@ void ExibirMenuJogos()
         DrawText("cobrinha", botaoJogo1.x + (botaoJogo1.width - MeasureText("cobrinha", fontSize))/2, botaoJogo1.y + 15, fontSize, WHITE);
         DrawText("pula_catraca", botaoJogo2.x + (botaoJogo2.width - MeasureText("pula_catraca", fontSize))/2, botaoJogo2.y + 15, fontSize, WHITE);
         DrawText("flappy bird", botaoJogo3.x + (botaoJogo3.width - MeasureText("flappy bird", fontSize))/2, botaoJogo3.y + 15, fontSize, WHITE);
-        DrawText("Voltar", botaoVoltar.x + (botaoVoltar.width - MeasureText("Voltar", fontSize))/2, botaoVoltar.y + 10, fontSize, BLACK);
+        DrawText("Sair", botaoVoltar.x + (botaoVoltar.width - MeasureText("Voltar", fontSize))/2, botaoVoltar.y + 10, fontSize, BLACK);
         EndDrawing();
     }
     
+    UnloadMusicStream(musica);
+    CloseAudioDevice();
     CloseWindow();
 }
