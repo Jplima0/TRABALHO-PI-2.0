@@ -1,95 +1,136 @@
+// inimigo.c
 #include "inimigo.h"
 #include <stdlib.h>
 #include <time.h>
 #include "raylib.h"
+#include <math.h>
 
 #define SQUARE_SIZE 20
 #define GRID_WIDTH 20
 #define GRID_HEIGHT 15
 
-// Implementação da função auxiliar
-static bool Vector2Equals(Vector2 a, Vector2 b) {
-    return (a.x == b.x) && (a.y == b.y);
-}
-
 void InicializarInimigo(Inimigo *inimigo) {
-    int startX = GetRandomValue(1, GRID_WIDTH - INIMIGO_SIZE - 1);
-    int startY = GetRandomValue(1, GRID_HEIGHT - 2);
+    // Posição inicial aleatória, garantindo que não comece em cima do jogador
+    int startX, startY;
+    do {
+        startX = GetRandomValue(0, GRID_WIDTH - 1);
+        startY = GetRandomValue(0, GRID_HEIGHT - 1);
+    } while ((startX >= 3 && startX <= 7) && (startY >= 3 && startY <= 7)); // Evita spawn perto do jogador
     
-    int direcao = GetRandomValue(0, 3);
-    Vector2 speed = {0};
-    
-    switch (direcao) {
-        case 0: speed = (Vector2){SQUARE_SIZE, 0}; break;
-        case 1: speed = (Vector2){-SQUARE_SIZE, 0}; break;
-        case 2: speed = (Vector2){0, -SQUARE_SIZE}; break;
-        case 3: speed = (Vector2){0, SQUARE_SIZE}; break;
-    }
-    
-    for (int i = 0; i < INIMIGO_SIZE; i++) {
-        inimigo->segmentos[i].position = (Vector2){
-            (startX + i) * SQUARE_SIZE, 
-            startY * SQUARE_SIZE
-        };
-        inimigo->segmentos[i].speed = speed;
-        inimigo->segmentos[i].color = RED;
-    }
-    inimigo->direcaoMudancaTimer = GetRandomValue(5, 15);
+    inimigo->segmentos[0].position = (Vector2){
+        startX * SQUARE_SIZE, 
+        startY * SQUARE_SIZE
+    };
+    inimigo->segmentos[0].speed = (Vector2){0, 0};
+    inimigo->segmentos[0].color = RED;
+    inimigo->direcao = GetRandomValue(0, 3); // Direção aleatória inicial
 }
 
-void AtualizarInimigo(Inimigo *inimigo) {
-    inimigo->direcaoMudancaTimer--;
-    if (inimigo->direcaoMudancaTimer <= 0) {
-        Vector2 novaSpeed = inimigo->segmentos[0].speed;
-        
-        while (Vector2Equals(novaSpeed, inimigo->segmentos[0].speed)) {
-            switch (GetRandomValue(0, 3)) {
-                case 0: novaSpeed = (Vector2){SQUARE_SIZE, 0}; break;
-                case 1: novaSpeed = (Vector2){-SQUARE_SIZE, 0}; break;
-                case 2: novaSpeed = (Vector2){0, -SQUARE_SIZE}; break;
-                case 3: novaSpeed = (Vector2){0, SQUARE_SIZE}; break;
+void AtualizarInimigo(Inimigo *inimigo, Vector2 posicaoCabecaJogador) {
+    // Calcula diferença de posição com o jogador
+    float diffX = posicaoCabecaJogador.x - inimigo->segmentos[0].position.x;
+    float diffY = posicaoCabecaJogador.y - inimigo->segmentos[0].position.y;
+
+    // Só muda de direção quando estiver alinhado com a grade
+    bool alinhadoX = ((int)inimigo->segmentos[0].position.x % SQUARE_SIZE) == 0;
+    bool alinhadoY = ((int)inimigo->segmentos[0].position.y % SQUARE_SIZE) == 0;
+
+    if (alinhadoX && alinhadoY) {
+        // Decide a direção baseada na maior diferença
+        if (fabsf(diffX) > fabsf(diffY)) {
+            if (diffX > 0) {
+                inimigo->direcao = DIRECAO_DIREITA;
+            } else {
+                inimigo->direcao = DIRECAO_ESQUERDA;
+            }
+        } else {
+            if (diffY > 0) {
+                inimigo->direcao = DIRECAO_BAIXO;
+            } else {
+                inimigo->direcao = DIRECAO_CIMA;
             }
         }
-        
-        for (int i = 0; i < INIMIGO_SIZE; i++) {
-            inimigo->segmentos[i].speed = novaSpeed;
-        }
-        inimigo->direcaoMudancaTimer = GetRandomValue(10, 20);
     }
-    
-    for (int i = INIMIGO_SIZE - 1; i > 0; i--) {
-        inimigo->segmentos[i].position = inimigo->segmentos[i-1].position;
+
+    // Move o inimigo baseado na direção atual
+    switch (inimigo->direcao) {
+        case DIRECAO_CIMA:
+            inimigo->segmentos[0].position.y -= VELOCIDADE_INIMIGO;
+            break;
+        case DIRECAO_BAIXO:
+            inimigo->segmentos[0].position.y += VELOCIDADE_INIMIGO;
+            break;
+        case DIRECAO_ESQUERDA:
+            inimigo->segmentos[0].position.x -= VELOCIDADE_INIMIGO;
+            break;
+        case DIRECAO_DIREITA:
+            inimigo->segmentos[0].position.x += VELOCIDADE_INIMIGO;
+            break;
     }
-    inimigo->segmentos[0].position.x += inimigo->segmentos[0].speed.x;
-    inimigo->segmentos[0].position.y += inimigo->segmentos[0].speed.y;
-    
-    if (inimigo->segmentos[0].position.x < 0 || 
-        inimigo->segmentos[0].position.x >= (GRID_WIDTH - 1) * SQUARE_SIZE ||
-        inimigo->segmentos[0].position.y < 0 || 
-        inimigo->segmentos[0].position.y >= (GRID_HEIGHT - 1) * SQUARE_SIZE) {
-        
-        for (int i = 0; i < INIMIGO_SIZE; i++) {
-            inimigo->segmentos[i].speed.x *= -1;
-            inimigo->segmentos[i].speed.y *= -1;
-        }
+
+    // Verifica colisão com paredes e ajusta a posição
+    if (inimigo->segmentos[0].position.x < 0) {
+        inimigo->segmentos[0].position.x = 0;
+        inimigo->direcao = DIRECAO_DIREITA;
+    } 
+    else if (inimigo->segmentos[0].position.x >= (GRID_WIDTH - 1) * SQUARE_SIZE) {
+        inimigo->segmentos[0].position.x = (GRID_WIDTH - 1) * SQUARE_SIZE;
+        inimigo->direcao = DIRECAO_ESQUERDA;
+    } 
+    else if (inimigo->segmentos[0].position.y < 0) {
+        inimigo->segmentos[0].position.y = 0;
+        inimigo->direcao = DIRECAO_BAIXO;
+    } 
+    else if (inimigo->segmentos[0].position.y >= (GRID_HEIGHT - 1) * SQUARE_SIZE) {
+        inimigo->segmentos[0].position.y = (GRID_HEIGHT - 1) * SQUARE_SIZE;
+        inimigo->direcao = DIRECAO_CIMA;
+    }
+
+    // Garante que o inimigo fique alinhado com a grade quando necessário
+    if (alinhadoX) {
+        inimigo->segmentos[0].position.x = roundf(inimigo->segmentos[0].position.x / SQUARE_SIZE) * SQUARE_SIZE;
+    }
+    if (alinhadoY) {
+        inimigo->segmentos[0].position.y = roundf(inimigo->segmentos[0].position.y / SQUARE_SIZE) * SQUARE_SIZE;
     }
 }
 
 void DesenharInimigo(Inimigo *inimigo) {
-    for (int i = 0; i < INIMIGO_SIZE; i++) {
-        DrawRectangle(
-            inimigo->segmentos[i].position.x + 1,
-            inimigo->segmentos[i].position.y + 1, 
-            SQUARE_SIZE - 2, SQUARE_SIZE - 2, 
-            (i == 0) ? MAROON : RED);
+    DrawRectangle(
+        inimigo->segmentos[0].position.x,
+        inimigo->segmentos[0].position.y,
+        SQUARE_SIZE,
+        SQUARE_SIZE,
+        RED
+    );
+    
+    // Desenha olhos para indicar a direção
+    int eyeSize = SQUARE_SIZE / 5;
+    int eyeOffset = SQUARE_SIZE / 4;
+    
+    switch (inimigo->direcao) {
+        case DIRECAO_CIMA:
+            DrawCircle(inimigo->segmentos[0].position.x + eyeOffset, inimigo->segmentos[0].position.y + eyeOffset, eyeSize, WHITE);
+            DrawCircle(inimigo->segmentos[0].position.x + SQUARE_SIZE - eyeOffset, inimigo->segmentos[0].position.y + eyeOffset, eyeSize, WHITE);
+            break;
+        case DIRECAO_BAIXO:
+            DrawCircle(inimigo->segmentos[0].position.x + eyeOffset, inimigo->segmentos[0].position.y + SQUARE_SIZE - eyeOffset, eyeSize, WHITE);
+            DrawCircle(inimigo->segmentos[0].position.x + SQUARE_SIZE - eyeOffset, inimigo->segmentos[0].position.y + SQUARE_SIZE - eyeOffset, eyeSize, WHITE);
+            break;
+        case DIRECAO_ESQUERDA:
+            DrawCircle(inimigo->segmentos[0].position.x + eyeOffset, inimigo->segmentos[0].position.y + eyeOffset, eyeSize, WHITE);
+            DrawCircle(inimigo->segmentos[0].position.x + eyeOffset, inimigo->segmentos[0].position.y + SQUARE_SIZE - eyeOffset, eyeSize, WHITE);
+            break;
+        case DIRECAO_DIREITA:
+            DrawCircle(inimigo->segmentos[0].position.x + SQUARE_SIZE - eyeOffset, inimigo->segmentos[0].position.y + eyeOffset, eyeSize, WHITE);
+            DrawCircle(inimigo->segmentos[0].position.x + SQUARE_SIZE - eyeOffset, inimigo->segmentos[0].position.y + SQUARE_SIZE - eyeOffset, eyeSize, WHITE);
+            break;
     }
 }
 
 bool VerificarColisaoInimigo(Inimigo *inimigo, Vector2 posicao) {
-    for (int i = 0; i < INIMIGO_SIZE; i++) {
-        if (Vector2Equals(inimigo->segmentos[i].position, posicao)) {
-            return true;
-        }
-    }
-    return false;
+    return (inimigo->segmentos[0].position.x < posicao.x + SQUARE_SIZE &&
+            inimigo->segmentos[0].position.x + SQUARE_SIZE > posicao.x &&
+            inimigo->segmentos[0].position.y < posicao.y + SQUARE_SIZE &&
+            inimigo->segmentos[0].position.y + SQUARE_SIZE > posicao.y);
 }
