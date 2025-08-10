@@ -93,20 +93,40 @@ int IniciarMenu() {
             DrawTexturePro(icon, sourceRecIcon, botaoConfiguracao, origin, 0.0f, WHITE);
         }
         if (telaAtual == MENU_PRINCIPAL) {
-        UpdateMusicStream(musica); 
-        DrawRectangleRec(botaoIniciar, corBotaoIniciar);
-        DrawRectangleRec(botaoSair, corBotaoSair);
+            UpdateMusicStream(musica); 
+            DrawRectangleRec(botaoIniciar, corBotaoIniciar);
+            DrawRectangleRec(botaoSair, corBotaoSair);
 
-        int fontSize = 50; // Reduzi o tamanho da fonte para caber melhor
-        int x_start = largura/2 - MeasureText("Jailson's Arcade", fontSize)/2; // Centraliza horizontalmente
-        int y_start = 80; // Posição vertical ajustada
+            int fontSize = 50;
+    
+            // Calcula posições separadas para cada parte do texto
+            const char* jailsonText = "Jailson's";
+            const char* arcadeText = " Arcade";
+    
+            // Mede o comprimento de cada parte
+            int jailsonWidth = MeasureText(jailsonText, fontSize);
+            int arcadeWidth = MeasureText(arcadeText, fontSize);
+    
+            // Calcula posição X inicial para centralizar o texto completo
+            int totalWidth = jailsonWidth + arcadeWidth;
+            int x_start = largura/2 - totalWidth/2;
+            int y_start = 80;
 
-        // Desenha o texto com sombra
-        DrawText("Jailson's Arcade", x_start + 3, y_start + 3, fontSize, BLACK); // Sombra
-        DrawText("Jailson's Arcade", x_start, y_start, fontSize, PURPLE); // Laranja
+            // Cores personalizadas
+            Color roxoJailson = (Color){128, 0, 128, 255};       // Roxo
+            Color laranjaArcade = (Color){255, 165, 0, 255};     // Laranja
 
-        DrawText("Iniciar", 355, 340, 30, BLACK);  
-        DrawText("Sair", 370, 410, 30, BLACK);
+            // Desenha sombra primeiro
+            DrawText(jailsonText, x_start + 3, y_start + 3, fontSize, BLACK);
+            DrawText(arcadeText, x_start + jailsonWidth + 3, y_start + 3, fontSize, BLACK);
+    
+            // Desenha texto principal
+            DrawText(jailsonText, x_start, y_start, fontSize, roxoJailson);
+            DrawText(arcadeText, x_start + jailsonWidth, y_start, fontSize, laranjaArcade);
+
+            DrawText("Iniciar", 355, 340, 30, BLACK);  
+            DrawText("Sair", 370, 410, 30, BLACK);
+
   
               
         } else if (telaAtual == CONFIGURACOES) {
