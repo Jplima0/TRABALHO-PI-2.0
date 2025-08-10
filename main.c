@@ -1,4 +1,4 @@
-#include "menu/menu.h"
+#include "menu.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <raylib.h>
@@ -99,7 +99,6 @@ void ExibirMenuJogos()
         DrawText("Sair", botaoVoltar.x + (botaoVoltar.width - MeasureText("Voltar", fontSize))/2, botaoVoltar.y + 10, fontSize, BLACK);
         EndDrawing();
     }
-    
     UnloadMusicStream(musica);
     CloseAudioDevice();
     CloseWindow();
