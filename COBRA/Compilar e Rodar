@@ -1,3 +1,4 @@
-gcc -o snake snake.c -lraylib -lGL -lm -lpthread -ldl
+gcc snake.c inimigo.c -o cobra -lraylib -lGL -lm -lpthread -ldl -lrt -lX11
 
-./snake
+./cobra
+
