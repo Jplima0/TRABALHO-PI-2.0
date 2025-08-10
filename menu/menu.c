@@ -19,7 +19,7 @@ int IniciarMenu() {
     SetTargetFPS(60);
     InitAudioDevice();
 
-    Texture2D background = LoadTexture("Menu/imagens/menu.png");
+    Texture2D background = LoadTexture("menu.png");
     Texture2D icon = LoadTexture("Menu/imagens/configuracao.png");
     Texture2D pergaminho = LoadTexture("Menu/imagens/pergaminho.png");
     Music musica = LoadMusicStream("Menu/Som/menu.wav");
@@ -92,25 +92,22 @@ int IniciarMenu() {
             Rectangle sourceRecIcon = { 0, 0, (float)icon.width, (float)icon.height };
             DrawTexturePro(icon, sourceRecIcon, botaoConfiguracao, origin, 0.0f, WHITE);
         }
-
         if (telaAtual == MENU_PRINCIPAL) {
-            UpdateMusicStream(musica); 
-            DrawRectangleRec(botaoIniciar, corBotaoIniciar);
-            DrawRectangleRec(botaoSair, corBotaoSair);
+        UpdateMusicStream(musica); 
+        DrawRectangleRec(botaoIniciar, corBotaoIniciar);
+        DrawRectangleRec(botaoSair, corBotaoSair);
 
-            int fontSize = 80;
-            int x_start = 145;
-            int y_start = 50;
+        int fontSize = 50; // Reduzi o tamanho da fonte para caber melhor
+        int x_start = largura/2 - MeasureText("Jailson's Arcade", fontSize)/2; // Centraliza horizontalmente
+        int y_start = 80; // Posição vertical ajustada
 
-            DrawText("CIN", x_start + 5, y_start + 5, fontSize, BLACK);
-            DrawText("CIN", x_start, y_start, fontSize, RED);
+        // Desenha o texto com sombra
+        DrawText("Jailson's Arcade", x_start + 3, y_start + 3, fontSize, BLACK); // Sombra
+        DrawText("Jailson's Arcade", x_start, y_start, fontSize, PURPLE); // Laranja
 
-            int largura_cin = MeasureText("CIN", fontSize);
-            DrawText("DEFENDA", x_start + largura_cin + 5, y_start + 5, fontSize, BLACK);
-            DrawText("DEFENDA", x_start + largura_cin, y_start, fontSize, BLUE);
-
-            DrawText("Iniciar", 355, 340, 30, BLACK);  
-            DrawText("Sair", 370, 410, 30, BLACK);  
+        DrawText("Iniciar", 355, 340, 30, BLACK);  
+        DrawText("Sair", 370, 410, 30, BLACK);
+  
               
         } else if (telaAtual == CONFIGURACOES) {
             UpdateMusicStream(musica);
