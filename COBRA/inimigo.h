@@ -3,6 +3,7 @@
 
 #include "raylib.h"
 
+#define NUM_INIMIGOS 30
 #define INIMIGO_SIZE 1
 #define VELOCIDADE_INIMIGO 0.1f
 
@@ -24,9 +25,9 @@ typedef struct {
     Direcao direcao;
 } Inimigo;
 
-void InicializarInimigo(Inimigo *inimigo);
-void AtualizarInimigo(Inimigo *inimigo, Vector2 posicaoCabecaJogador);
-void DesenharInimigo(Inimigo *inimigo);
-bool VerificarColisaoInimigo(Inimigo *inimigo, Vector2 posicao);
+void InicializarInimigos(Inimigo inimigos[NUM_INIMIGOS]);
+void AtualizarInimigos(Inimigo inimigos[NUM_INIMIGOS], Vector2 posicaoCabecaJogador);
+void DesenharInimigos(Inimigo inimigos[NUM_INIMIGOS]);
+bool VerificarColisaoComInimigos(Inimigo inimigos[NUM_INIMIGOS], Vector2 posicao);
 
 #endif
