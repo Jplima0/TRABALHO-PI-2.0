@@ -260,22 +260,26 @@ int main(void) {
             // Desenho do chao 
             DrawRectangle(0, altura - 80, largura, 80, DARKGREEN);
             DrawRectangle(0, altura - 60, largura, 60, DARKBROWN);
+            DrawText(TextFormat("Pontuação: %d", pontuacao), 12, 12, 20, WHITE);
             DrawText(TextFormat("Pontuação: %d", pontuacao), 10, 10, 20, DARKBLUE);
+            DrawText(TextFormat("Recorde: %d", maiorPontuacao), 12, 42, 20, WHITE);
             DrawText(TextFormat("Recorde: %d", maiorPontuacao), 10, 40, 20, RED);
 
             if (telaAtual == FLAPPY_NIVEL2) {
-                DrawText("FASE 2 DESBLOQUEADO!", largura / 2 - 150, altura / 2 - 40, 30, BLUE);
+                DrawText("FASE 2 DESBLOQUEADA!", largura / 2 - 150, altura / 2 - 40, 30, BLUE);
                 DrawText("Aperte ENTER para continuar", largura / 2 - 180, altura / 2 + 10, 20, BLACK);
             }
             if (telaAtual == FIM_DE_JOGO) {
+                DrawText("GAME OVER", largura / 2 - 97, altura / 2 - 37, 40, BLACK);
                 DrawText("GAME OVER", largura / 2 - 100, altura / 2 - 40, 40, RED);
-                DrawText("Pressione ENTER ou CLIQUE para reiniciar", largura / 2 - 190, altura / 2 + 10, 20, DARKGRAY);
+                DrawText("Aperte ENTER para reiniciar", largura / 2 - 130, altura / 2 + 10, 20, DARKGRAY);
             }
         EndDrawing();
     }
 
     UnloadTexture(personagem.texturaPular);
     UnloadTexture(personagem.texturaCair);
+    UnloadTexture(background);
     CloseWindow();
     return 0;
 }
