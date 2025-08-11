@@ -1,4 +1,4 @@
-gcc cobra.c inimigo.c -o cobra -lraylib -lGL -lm -lpthread -ldl -lrt -lX11
+gcc COBRA/cobra.c COBRA/inimigo.c -o cobra -lraylib -lGL -lm -lpthread -ldl -lrt -lX11
 
 ./cobra
 

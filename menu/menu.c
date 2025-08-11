@@ -39,8 +39,6 @@ int IniciarMenu() {
 
     EstadoTela telaAtual = MENU_PRINCIPAL;
 
-    PlayMusicStream(musica);
-
     bool somLigado = true;
     bool telaCheia = false;
 
@@ -93,7 +91,6 @@ int IniciarMenu() {
             DrawTexturePro(icon, sourceRecIcon, botaoConfiguracao, origin, 0.0f, WHITE);
         }
         if (telaAtual == MENU_PRINCIPAL) {
-            UpdateMusicStream(musica); 
             DrawRectangleRec(botaoIniciar, corBotaoIniciar);
             DrawRectangleRec(botaoSair, corBotaoSair);
 
@@ -130,7 +127,6 @@ int IniciarMenu() {
   
               
         } else if (telaAtual == CONFIGURACOES) {
-            UpdateMusicStream(musica);
 
             Rectangle sourceRecPergaminho = { 0, 0, (float)pergaminho.width, (float)pergaminho.height };
             Rectangle destRecPergaminho = { largura/2 - 350, altura/2 - 320, 700, 650 };
@@ -143,22 +139,6 @@ int IniciarMenu() {
             DrawRectangleRec(botaoVoltar, LIGHTGRAY);
             DrawText("Voltar", largura/2 + 95, 460, 20, BLACK);
             
-            if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-                if (CheckCollisionPointRec(mouse, desligarSom)) {
-                    somLigado = !somLigado;
-                    if (somLigado) {
-                        PlayMusicStream(musica);
-                    } else {
-                        StopMusicStream(musica);
-                    }
-                }
-            }
-
-            if (somLigado) {
-                DrawText("Som: [ON]", desligarSom.x + 5, desligarSom.y + 10, 20, BLACK);
-            } else {
-                DrawText("Som: [OFF]", desligarSom.x + 5, desligarSom.y + 10, 20, DARKGRAY);
-            }
 
             if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
                 if (CheckCollisionPointRec(mouse, telacheia)) {

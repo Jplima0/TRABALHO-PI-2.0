@@ -8,7 +8,7 @@
 #define SQUARE_SIZE 20
 #define GRID_WIDTH 20
 #define GRID_HEIGHT 15
-#define LEVEL2_SCORE 10
+#define LEVEL2_SCORE 50
 #define WIN_SCORE 10
 
 typedef enum {
