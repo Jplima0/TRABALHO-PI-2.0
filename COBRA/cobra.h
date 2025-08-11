@@ -18,21 +18,21 @@ typedef struct {
     Vector2 size;
     Vector2 speed;
     Color color;
-} cobraSegment;
+} SnakeSegment;
 
 typedef struct {
-    cobraSegment *segmentos;
+    SnakeSegment *segments;
     int length;
     int capacity;
     Color color;
-} cobra;
+} Snake;
 
 // Funções da cobra
-void AddSegment(cobra *cobra, Vector2 position);
-void Movecobra(cobra *cobra);
-void GenerateFood(Food *food, cobra *cobra, Inimigo *inimigo);
-bool CheckCollisionWithSelf(cobra *cobra);
-bool CheckCollisionWithWalls(cobra *cobra);
+void AddSegment(Snake *snake, Vector2 position);
+void MoveSnake(Snake *snake);
+void GenerateFood(Food *food, Snake *snake, Inimigo inimigos[NUM_INIMIGOS]);
+bool CheckCollisionWithSelf(Snake *snake);
+bool CheckCollisionWithWalls(Snake *snake);
 
 // Funções do jogo
 void InicializarJogo(cobra *cobra, Inimigo *inimigo, Food *food);

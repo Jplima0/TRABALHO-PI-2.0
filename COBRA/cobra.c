@@ -2,15 +2,19 @@
 #include <stdlib.h>
 #include <time.h>
 #include "inimigo.h"
+#include <math.h> 
 
+#define SPEED 10
 #define SQUARE_SIZE 20
 #define GRID_WIDTH 20
 #define GRID_HEIGHT 15
-#define WIN_SCORE 100
+#define LEVEL2_SCORE 10
+#define WIN_SCORE 10
 
 typedef enum {
     SCREEN_START,
     SCREEN_GAME,
+    SCREEN_LEVEL2,
     SCREEN_GAME_OVER,
     SCREEN_WIN
 } GameScreen;
@@ -101,10 +105,11 @@ bool CheckCollisionWithWalls(Snake *snake) {
             snake->segments[0].position.y >= GRID_HEIGHT * SQUARE_SIZE);
 }
 
+
 int main(void) {
     const int screenWidth = GRID_WIDTH * SQUARE_SIZE;
     const int screenHeight = GRID_HEIGHT * SQUARE_SIZE;
-    
+
     InitWindow(screenWidth, screenHeight, "Jogo da Cobrinha com Raylib");
     InitAudioDevice();
     
@@ -113,7 +118,7 @@ int main(void) {
     PlayMusicStream(music);
     SetMusicVolume(music, 0.5f);
     
-    SetTargetFPS(10);
+    SetTargetFPS(60);
     
     GameScreen currentScreen = SCREEN_START;
     
@@ -133,7 +138,13 @@ int main(void) {
     GenerateFood(&food, &snake, inimigos);
     
     int score = 0;
+    int level = 1;
+    //controle de velocidade
+    float moveTimer = 0.0f;
+    float moveInterval = 0.30f;  // velocidade inicial (4 passos/s)
+    const float minInterval = 0.06f; // velocidade máxima (16 passos/s)
     
+
     while (!WindowShouldClose()) {
         UpdateMusicStream(music);
         
@@ -153,25 +164,60 @@ int main(void) {
                 } else if (IsKeyPressed(KEY_DOWN) && snake.segments[0].speed.y == 0) {
                     snake.segments[0].speed = (Vector2){0, SQUARE_SIZE};
                 }
-                
+
+                // TIMER
+                moveTimer += GetFrameTime();
+                if (moveTimer >= moveInterval) {
+                    moveTimer -= moveInterval;
+
                 MoveSnake(&snake);
                 AtualizarInimigos(inimigos, snake.segments[0].position);
-                
+
+                // Comer comida
                 if (snake.segments[0].position.x == food.position.x && 
                     snake.segments[0].position.y == food.position.y) {
                     AddSegment(&snake, snake.segments[snake.length-1].position);
                     GenerateFood(&food, &snake, inimigos);
                     score += 10;
-                    
-                    if (score >= WIN_SCORE) {
+                    // Aumenta a velocidade aos poucos
+                    moveInterval = fmaxf(minInterval, moveInterval - 0.01f);
+
+                    if (level == 1 && score >= LEVEL2_SCORE) {
+                        currentScreen = SCREEN_LEVEL2;
+                    }
+                    if (level == 2 && score >= WIN_SCORE) {
                         currentScreen = SCREEN_WIN;
                     }
                 }
-                
+                // Colisões
                 if (CheckCollisionWithSelf(&snake) || 
-                    CheckCollisionWithWalls(&snake) || 
-                    VerificarColisaoComInimigos(inimigos, snake.segments[0].position)) {
+                CheckCollisionWithWalls(&snake) || 
+                VerificarColisaoComInimigos(inimigos, snake.segments[0].position)) {
                     currentScreen = SCREEN_GAME_OVER;
+                    }
+                }
+            } break;
+            case SCREEN_LEVEL2: {
+                if (IsKeyPressed(KEY_ENTER)) {
+                level = 2;
+
+                free(snake.segments);
+                snake.length = 0;
+                snake.capacity = 10;
+                snake.segments = malloc(snake.capacity * sizeof(SnakeSegment));
+                snake.color = GREEN;
+                AddSegment(&snake, (Vector2){5 * SQUARE_SIZE, 5 * SQUARE_SIZE});
+                AddSegment(&snake, (Vector2){4 * SQUARE_SIZE, 5 * SQUARE_SIZE});
+                AddSegment(&snake, (Vector2){3 * SQUARE_SIZE, 5 * SQUARE_SIZE});
+                
+                InicializarInimigos(inimigos);
+                
+                moveTimer = 0.0f;
+                moveInterval = 0.15f; // velocidade 2x
+                score = 0;
+
+                GenerateFood(&food, &snake, inimigos);
+                currentScreen = SCREEN_GAME;
                 }
             } break;
             case SCREEN_GAME_OVER: {
@@ -189,6 +235,9 @@ int main(void) {
                     GenerateFood(&food, &snake, inimigos);
                     currentScreen = SCREEN_GAME;
                     score = 0;
+                    level = 1;
+                    moveTimer = 0.0f;
+                    moveInterval = 0.30f;
                 }
             } break;
             case SCREEN_WIN: {
@@ -205,7 +254,10 @@ int main(void) {
                     InicializarInimigos(inimigos);
                     GenerateFood(&food, &snake, inimigos);
                     currentScreen = SCREEN_GAME;
+                    level = 1;
                     score = 0;
+                    moveTimer = 0.0f;
+                    moveInterval = 0.30f;
                 }
             } break;
             default: break;
@@ -243,6 +295,17 @@ int main(void) {
                     }
                     
                     DrawText(TextFormat("Pontos: %d", score), 10, 10, 20, DARKGRAY);
+                } break;
+                case SCREEN_LEVEL2: {
+                // Fundo e textos simples
+                ClearBackground(RAYWHITE);
+                const char *t1 = "FASE 2 PRONTA";
+                const char *t2 = "Pressione ENTER para iniciar";
+                const char *t3 = "Dica: a Fase 2 esta mais rapida!";
+
+                DrawText(t1, screenWidth/2 - MeasureText(t1, 40)/2, screenHeight/2 - 60, 40, DARKBLUE);
+                DrawText(t2, screenWidth/2 - MeasureText(t2, 20)/2, screenHeight/2 + 0, 20, DARKGRAY);
+                DrawText(t3, screenWidth/2 - MeasureText(t3, 20)/2, screenHeight/2 + 30, 20, DARKGRAY);
                 } break;
                 case SCREEN_GAME_OVER: {
                     DrawText("GAME OVER", screenWidth/2 - MeasureText("GAME OVER", 40)/2, screenHeight/2 - 40, 40, RED);
