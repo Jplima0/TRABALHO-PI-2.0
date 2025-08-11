@@ -1,8 +1,12 @@
 # TRABALHO-PI-2.0
 
-Dois Jogos
+JAILSON'S ARCADE
 
-primeira fase um jogo da cobrinha, e a segunda é um flappy bird
+
+opção de três jogos com duas fases cada.
+ - cobrinha
+ - pula Catraca
+ - Flappy bird
 
 
 gcc main.c menu/menu.c -o arcade -lraylib -lGL -lm -lpthread -ldl -lrt -lX11
